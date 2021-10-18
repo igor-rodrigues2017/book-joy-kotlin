@@ -1,7 +1,5 @@
 package com.fpinkotlin.common
 
-import com.fpinkotlin.common.Stream.Companion.fill
-import com.fpinkotlin.common.Stream.Companion.iterate
 import java.math.BigInteger
 
 
