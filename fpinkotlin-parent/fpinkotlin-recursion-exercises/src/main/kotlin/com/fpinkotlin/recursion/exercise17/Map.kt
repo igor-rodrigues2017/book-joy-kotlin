@@ -22,4 +22,13 @@ fun <T, U> foldLeft(list: List<T>, z: U, f: (U, T) -> U): U {
     return foldLeft_(list, z, f)
 }
 
-fun <T, U> map(list: List<T>, f: (T) -> U): List<U> = TODO("map")
+fun <T, U> map(list: List<T>, f: (T) -> U): List<U> {
+    tailrec fun map_(acc: List<U>, elements: List<T>): List<U> =
+        if(elements.isEmpty()) acc else map_(acc + f(elements.head()), elements.tail())
+    return map_(listOf(), list)
+}
+
+
+//or
+
+fun <T, U> map2(list: List<T>, f: (T) -> U): List<U> = foldLeft(list, listOf()) { acc, element -> acc + f(element) }
