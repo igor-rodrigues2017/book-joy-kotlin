@@ -26,11 +26,12 @@ sealed class List<out A> {
 
     fun <B> foldLeft(identity: B, f: (B) -> (A) -> B): B = foldLeft(identity, this, f)
 
-    fun length(): Int = foldLeft(0) { { _ -> it + 1} }
+    fun length(): Int = foldLeft(0) { { _ -> it + 1 } }
 
-    fun <B> foldRightViaFoldLeft(identity: B, f: (A) -> (B) -> B): B = TODO("foldRightViaFoldLeft")
+    fun <B> foldRightViaFoldLeft(identity: B, f: (A) -> (B) -> B): B =
+        reverse().foldLeft(identity) { acc -> { element -> f(element)(acc) } }
 
-    internal object Nil: List<Nothing>() {
+    internal object Nil : List<Nothing>() {
 
         override fun init(): List<Nothing> = throw IllegalStateException("init called on an empty list")
 
@@ -39,7 +40,7 @@ sealed class List<out A> {
         override fun toString(): String = "[NIL]"
     }
 
-    internal class Cons<out A>(internal val head: A, internal val tail: List<A>): List<A>() {
+    internal class Cons<out A>(internal val head: A, internal val tail: List<A>) : List<A>() {
 
         override fun init(): List<A> = reverse().drop(1).reverse()
 
@@ -48,7 +49,7 @@ sealed class List<out A> {
         override fun toString(): String = "[${toString("", this)}NIL]"
 
         private tailrec fun toString(acc: String, list: List<A>): String = when (list) {
-            Nil  -> acc
+            Nil -> acc
             is Cons -> toString("$acc${list.head}, ", list.tail)
         }
     }
@@ -73,19 +74,19 @@ sealed class List<out A> {
         }
 
         fun <A, B> foldRight(list: List<A>, identity: B, f: (A) -> (B) -> B): B =
-                when (list) {
-                    Nil -> identity
-                    is Cons -> f(list.head)(foldRight(list.tail, identity, f))
-                }
+            when (list) {
+                Nil -> identity
+                is Cons -> f(list.head)(foldRight(list.tail, identity, f))
+            }
 
         tailrec fun <A, B> foldLeft(acc: B, list: List<A>, f: (B) -> (A) -> B): B =
-                when (list) {
-                    Nil -> acc
-                    is Cons -> foldLeft(f(acc)(list.head), list.tail, f)
-                }
+            when (list) {
+                Nil -> acc
+                is Cons -> foldLeft(f(acc)(list.head), list.tail, f)
+            }
 
         operator fun <A> invoke(vararg az: A): List<A> =
-                az.foldRight(Nil) { a: A, list: List<A> -> Cons(a, list) }
+            az.foldRight(Nil) { a: A, list: List<A> -> Cons(a, list) }
     }
 }
 

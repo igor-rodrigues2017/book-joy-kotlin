@@ -28,16 +28,16 @@ sealed class List<out A> {
 
     fun <B> foldLeft(identity: B, f: (B) -> (A) -> B): B = foldLeft(identity, this, f)
 
-    fun length(): Int = foldLeft(0) { { _ -> it + 1} }
+    fun length(): Int = foldLeft(0) { { _ -> it + 1 } }
 
     fun <B> foldRightViaFoldLeft(identity: B, f: (A) -> (B) -> B): B =
-            this.reverse().foldLeft(identity) { x -> { y -> f(y)(x) } }
+        this.reverse().foldLeft(identity) { x -> { y -> f(y)(x) } }
 
     fun <B> coFoldRight(identity: B, f: (A) -> (B) -> B): B = coFoldRight(identity, this.reverse(), identity, f)
 
-    fun <B> map(f: (A) -> B): List<B> = TODO("map")
+    fun <B> map(f: (A) -> B): List<B> = foldLeft(Nil) { acc: List<B> -> { h: A -> Cons(f(h), acc) } }.reverse()
 
-    internal object Nil: List<Nothing>() {
+    internal object Nil : List<Nothing>() {
 
         override fun init(): List<Nothing> = throw IllegalStateException("init called on an empty list")
 
@@ -46,7 +46,7 @@ sealed class List<out A> {
         override fun toString(): String = "[NIL]"
     }
 
-    internal class Cons<out A>(internal val head: A, internal val tail: List<A>): List<A>() {
+    internal class Cons<out A>(internal val head: A, internal val tail: List<A>) : List<A>() {
 
         override fun init(): List<A> = reverse().drop(1).reverse()
 
@@ -55,7 +55,7 @@ sealed class List<out A> {
         override fun toString(): String = "[${toString("", this)}NIL]"
 
         private tailrec fun toString(acc: String, list: List<A>): String = when (list) {
-            Nil  -> acc
+            Nil -> acc
             is Cons -> toString("$acc${list.head}, ", list.tail)
         }
     }
@@ -76,30 +76,31 @@ sealed class List<out A> {
 
         fun <A> concat(list1: List<A>, list2: List<A>): List<A> = list1.reverse().foldLeft(list2) { x -> x::cons }
 
-        fun <A> concatViaFoldRight(list1: List<A>, list2: List<A>): List<A> = foldRight(list1, list2) { x -> { y -> Cons(x, y) } }
+        fun <A> concatViaFoldRight(list1: List<A>, list2: List<A>): List<A> =
+            foldRight(list1, list2) { x -> { y -> Cons(x, y) } }
 
         fun <A, B> foldRight(list: List<A>, identity: B, f: (A) -> (B) -> B): B =
-                when (list) {
-                    Nil -> identity
-                    is Cons -> f(list.head)(foldRight(list.tail, identity, f))
-                }
+            when (list) {
+                Nil -> identity
+                is Cons -> f(list.head)(foldRight(list.tail, identity, f))
+            }
 
         tailrec fun <A, B> foldLeft(acc: B, list: List<A>, f: (B) -> (A) -> B): B =
-                when (list) {
-                    Nil -> acc
-                    is Cons -> foldLeft(f(acc)(list.head), list.tail, f)
-                }
+            when (list) {
+                Nil -> acc
+                is Cons -> foldLeft(f(acc)(list.head), list.tail, f)
+            }
 
         tailrec fun <A, B> coFoldRight(acc: B, list: List<A>, identity: B, f: (A) -> (B) -> B): B =
-                when (list) {
-                    Nil -> acc
-                    is Cons -> coFoldRight(f(list.head)(acc), list.tail, identity, f)
-                }
+            when (list) {
+                Nil -> acc
+                is Cons -> coFoldRight(f(list.head)(acc), list.tail, identity, f)
+            }
 
         fun <A> flatten(list: List<List<A>>): List<A> = list.coFoldRight(Nil) { x -> x::concat }
 
         operator fun <A> invoke(vararg az: A): List<A> =
-                az.foldRight(Nil) { a: A, list: List<A> -> Cons(a, list) }
+            az.foldRight(Nil) { a: A, list: List<A> -> Cons(a, list) }
     }
 }
 
@@ -108,7 +109,7 @@ fun sum(list: List<Int>): Int = list.foldRight(0) { x -> { y -> x + y } }
 fun product(list: List<Double>): Double = list.foldRight(1.0) { x -> { y -> x * y } }
 
 fun triple(list: List<Int>): List<Int> =
-        List.foldRight(list, List()) { h -> { t: List<Int> -> t.cons(h * 3) } }
+    List.foldRight(list, List()) { h -> { t: List<Int> -> t.cons(h * 3) } }
 
 fun doubleToString(list: List<Double>): List<String> =
-        List.foldRight(list, List())  { h -> { t: List<String> -> t.cons(h.toString()) } }
+    List.foldRight(list, List()) { h -> { t: List<String> -> t.cons(h.toString()) } }
