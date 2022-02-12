@@ -125,7 +125,8 @@ val upperOption: (Option<String>) -> Option<String> = lift { it.toUpperCase() }
 
 val upperOption_: (Option<String>) -> Option<String> = lift(String::toUpperCase)
 
-fun <A, B, C> map2(oa: Option<A>,
-                   ob: Option<B>,
-                   f: (A) -> (B) -> C): Option<C> = TODO("map2")
-
+fun <A, B, C> map2(
+    oa: Option<A>,
+    ob: Option<B>,
+    f: (A) -> (B) -> C
+): Option<C> = oa.flatMap { a -> ob.map { b -> f(a)(b) } }

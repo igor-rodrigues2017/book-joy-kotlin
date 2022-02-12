@@ -3,7 +3,6 @@ package com.fpinkotlin.optionaldata.exercise11
 import com.fpinkotlin.common.List
 import com.fpinkotlin.common.sum
 
-
 sealed class Option<out A> {
 
     abstract fun isEmpty(): Boolean
@@ -13,7 +12,7 @@ sealed class Option<out A> {
     fun <B> flatMap(f: (A) -> Option<B>): Option<B> = map(f).getOrElse(None)
 
     fun filter(p: (A) -> Boolean): Option<A> =
-            flatMap { x -> if (p(x)) this else None }
+        flatMap { x -> if (p(x)) this else None }
 
     fun orElse(default: () -> Option<@UnsafeVariance A>): Option<A> = map { this }.getOrElse(default)
 
@@ -27,7 +26,7 @@ sealed class Option<out A> {
         is Some -> value
     }
 
-    internal object None: Option<Nothing>() {
+    internal object None : Option<Nothing>() {
 
         override fun <B> map(f: (Nothing) -> B): Option<B> = None
 
@@ -87,7 +86,6 @@ fun mean(list: List<Double>): Option<Double> =
         else -> Option(list.sum() / list.length())
     }
 
-
 fun variance(list: List<Double>): Option<Double> =
     mean(list).flatMap { m ->
         mean(list.map { x ->
@@ -95,10 +93,9 @@ fun variance(list: List<Double>): Option<Double> =
         })
     }
 
-
 val abs: (Double) -> Double = { d -> if (d > 0) d else -d }
 
-val absO: (Option<Double>) -> Option<Double>  = lift { abs(it) }
+val absO: (Option<Double>) -> Option<Double> = lift { abs(it) }
 
 fun <A, B> lift(f: (A) -> B): (Option<A>) -> Option<B> = {
     try {
@@ -128,16 +125,20 @@ val upperOption: (Option<String>) -> Option<String> = lift { it.toUpperCase() }
 
 val upperOption_: (Option<String>) -> Option<String> = lift(String::toUpperCase)
 
-fun <A, B, C> map2(oa: Option<A>,
-                   ob: Option<B>,
-                   f: (A) -> (B) -> C): Option<C> =
-        oa.flatMap { a -> ob.map { b -> f(a)(b) } }
+fun <A, B, C> map2(
+    oa: Option<A>,
+    ob: Option<B>,
+    f: (A) -> (B) -> C
+): Option<C> =
+    oa.flatMap { a -> ob.map { b -> f(a)(b) } }
 
-fun <A, B, C, D> map3(oa: Option<A>,
-                      ob: Option<B>,
-                      oc: Option<C>,
-                      f: (A) -> (B) -> (C) -> D): Option<D> =
-        oa.flatMap { a -> ob.flatMap { b -> oc.map { c -> f(a)(b)(c) } } }
+fun <A, B, C, D> map3(
+    oa: Option<A>,
+    ob: Option<B>,
+    oc: Option<C>,
+    f: (A) -> (B) -> (C) -> D
+): Option<D> =
+    oa.flatMap { a -> ob.flatMap { b -> oc.map { c -> f(a)(b)(c) } } }
 
 fun <A> sequence(list: List<Option<A>>): Option<List<A>> = TODO("sequence")
 

@@ -1,5 +1,6 @@
 package com.fpinkotlin.optionaldata.exercise09
 
+import kotlin.math.pow
 
 sealed class Option<out A> {
 
@@ -10,7 +11,7 @@ sealed class Option<out A> {
     fun <B> flatMap(f: (A) -> Option<B>): Option<B> = map(f).getOrElse(None)
 
     fun filter(p: (A) -> Boolean): Option<A> =
-            flatMap { x -> if (p(x)) this else None }
+        flatMap { x -> if (p(x)) this else None }
 
     fun orElse(default: () -> Option<@UnsafeVariance A>): Option<A> = map { this }.getOrElse(default)
 
@@ -24,7 +25,7 @@ sealed class Option<out A> {
         is Some -> value
     }
 
-    internal object None: Option<Nothing>() {
+    internal object None : Option<Nothing>() {
 
         override fun <B> map(f: (Nothing) -> B): Option<B> = None
 
@@ -88,16 +89,22 @@ fun mean(list: List<Double>): Option<Double> =
 fun variance(list: List<Double>): Option<Double> =
     mean(list).flatMap { m ->
         mean(list.map { x ->
-            Math.pow((x - m), 2.0)
+            (x - m).pow(2.0)
         })
     }
 
 
 val abs: (Double) -> Double = { d -> if (d > 0) d else -d }
 
-val absO: (Option<Double>) -> Option<Double>  = lift { abs(it) }
+val absO: (Option<Double>) -> Option<Double> = lift { abs(it) }
 
-fun <A, B> lift(f: (A) -> B): (Option<A>) -> Option<B> = TODO("lift")
+fun <A, B> lift(f: (A) -> B): (Option<A>) -> Option<B> = {
+    try {
+        it.map(f)
+    } catch (e: Exception) {
+        Option()
+    }
+}
 
 fun abs(d: Double): Double = if (d > 0) d else -d
 
